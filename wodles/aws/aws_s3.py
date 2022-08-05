@@ -64,6 +64,12 @@ if sys.version_info[0] == 3:
 
 # Enable/disable debug mode
 debug_level = 0
+INVALID_CREDENTIALS_ERROR_CODE = "SignatureDoesNotMatch"
+INVALID_CREDENTIALS_ERROR_MESSAGE = "Invalid credentials to access S3 Bucket"
+
+CLIENT_ERROR_MESSAGES_MAP = {
+    INVALID_CREDENTIALS_ERROR_CODE: INVALID_CREDENTIALS_ERROR_MESSAGE
+}
 
 
 ################################################################################
@@ -1024,6 +1030,30 @@ class AWSBucket(WazuhIntegration):
             print(f"ERROR: Unexpected error querying/working with objects in S3: {err}")
             sys.exit(7)
 
+    @staticmethod
+    def _get_client_error_message(
+        error: botocore.exceptions.ClientError, messages_map: dict = CLIENT_ERROR_MESSAGES_MAP
+    ) -> str:
+        """Given a `ClientError` instance return the contained message or a custom one.
+
+        Parameters
+        ----------
+        error : botocore.exceptions.ClientError
+            ClientError instance to get the code and message
+        messages_map : dict, optional
+            Map to override default error message, by default CLIENT_ERROR_MESSAGES_MAP
+
+        Returns
+        -------
+        str
+            The error message
+        """
+        error_attrs = error.response.get("Error", {})
+        error_msg = error_attrs.get("Message")
+        error_code = error_attrs.get("Code")
+
+        return messages_map.get(error_code, error_msg)
+
     def check_bucket(self):
         """Check if the bucket is empty or the credentials are wrong."""
         try:
@@ -1035,8 +1065,9 @@ class AWSBucket(WazuhIntegration):
             else:
                 print("ERROR: No files were found in '{0}'. No logs will be processed.".format(self.bucket_path))
                 exit(14)
-        except botocore.exceptions.ClientError:
-            print("ERROR: Invalid credentials to access S3 Bucket")
+        except botocore.exceptions.ClientError as error:
+            error_message = self._get_client_error_message(error)
+            print(f"ERROR: {error_message}")
             exit(3)
         except botocore.exceptions.EndpointConnectionError as e:
             print(f"ERROR: {str(e)}")
@@ -1541,7 +1572,7 @@ class AWSVPCFlowBucket(AWSLogsBucket):
                 flow_log_id,
                 log_key,
                 processed_date,
-                created_date) 
+                created_date)
             VALUES (
                 :bucket_path,
                 :aws_account_id,
@@ -1944,7 +1975,7 @@ class AWSCustomBucket(AWSBucket):
                 aws_account_id,
                 log_key,
                 processed_date,
-                created_date) 
+                created_date)
             VALUES (
                 :bucket_path,
                 :aws_account_id,
@@ -2482,8 +2513,9 @@ class AWSServerAccess(AWSCustomBucket):
             if not 'CommonPrefixes' in self.client.list_objects_v2(Bucket=self.bucket, Delimiter='/'):
                 print("ERROR: No files were found in '{0}'. No logs will be processed.".format(self.bucket_path))
                 exit(14)
-        except botocore.exceptions.ClientError:
-            print("ERROR: Invalid credentials to access S3 Bucket")
+        except botocore.exceptions.ClientError as error:
+            error_message = self._get_client_error_message(error)
+            print(f"ERROR: {error_message}")
             exit(3)
 
     def load_information_from_file(self, log_key):
