@@ -64,7 +64,7 @@ if sys.version_info[0] == 3:
 
 # Enable/disable debug mode
 debug_level = 0
-
+WARNING = "WARNING"
 
 ################################################################################
 # Classes
@@ -2394,8 +2394,18 @@ class AWSALBBucket(AWSLBBucket):
                 "request_creation_time", "action_executed", "redirect_url", "error_reason", "target_port_list",
                 "target_status_code_list", "classification", "classification_reason")
             tsv_file = csv.DictReader(f, fieldnames=fieldnames, delimiter=' ')
+            tsv_file = [dict(x, source='alb') for x in tsv_file]
 
-            return [dict(x, source='alb') for x in tsv_file]
+            for log_entry in tsv_file:
+                try:
+                    log_entry["client_ip"], log_entry["client_port"] = log_entry["client_port"].split(":")
+                    log_entry["target_ip"], log_entry["target_port"] = log_entry["target_port"].split(":")
+                    log_entry["target_ip_list"], log_entry["target_port_list"] = log_entry["target_port_list"].split(":")
+                except ValueError:
+                    print(f"{WARNING}: Unable to process correctly malformed ABL log entry: {log_entry}.")
+
+            return tsv_file
+
 
 
 class AWSCLBBucket(AWSLBBucket):
@@ -2837,7 +2847,7 @@ class AWSInspector(AWSService):
                                                                                'endDate': date_current}})
             self.send_describe_findings(response['findingArns'])
 
-        if self.sent_events:        
+        if self.sent_events:
             debug(f"+++ {self.sent_events} events collected and processed in {self.inspector_region}", 1)
         else:
             debug(f'+++ There are no new events in the "{self.inspector_region}" region', 1)
@@ -3027,9 +3037,9 @@ class AWSCloudWatchLogs(AWSService):
                     token = None
 
                     if db_values:
-                        if self.reparse: 
+                        if self.reparse:
                             result_before = self.get_alerts_within_range(log_group=log_group, log_stream=log_stream,
-                                                                         token=None, start_time=start_time, 
+                                                                         token=None, start_time=start_time,
                                                                          end_time=None)
 
                         elif db_values['start_time'] and db_values['start_time'] > start_time:
