@@ -206,5 +206,5 @@ After that we can execute this command to install the dependencies necessary to 
 After install the dependencies, we can build Wazuh in Alpine Linux using:
 
 ```
-#> make TARGET=agent ALPINE=1
+#> make TARGET=agent
 ```
