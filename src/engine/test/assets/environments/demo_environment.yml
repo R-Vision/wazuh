@@ -13,6 +13,8 @@ decoders:
   - apache_error
   - apache_access
   - aws-elb
+  - aws_cloudtrail
+  - aws_s3
 
 rules:
   - source_malicious_ip
