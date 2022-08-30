@@ -25,6 +25,9 @@ endif()
 list(APPEND shared_tests_names "test_integrity_op")
 list(APPEND shared_tests_flags " ")
 
+list(APPEND shared_tests_names "test_json_op")
+list(APPEND shared_tests_flags "-Wl,--wrap,w_get_file_content -Wl,--wrap,cJSON_ParseWithOpts")
+
 list(APPEND shared_tests_names "test_rbtree_op")
 list(APPEND shared_tests_flags " ")
 

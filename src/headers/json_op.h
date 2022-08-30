@@ -16,6 +16,12 @@
 // Check if a JSON object is tagged
 #define json_tagged_obj(x) (x && x->string)
 
+#ifdef DEBUG
+    #define WEAK_FOR_DEBUG __attr__((weak))
+#else
+    #define WEAK_FOR_DEBUG
+#endif
+
 #include <external/cJSON/cJSON.h>
 
 /**
