@@ -24,9 +24,9 @@ decoders:
   - cisco-ios-grandchild
   - cisco-asa
 
-rules:
-  - source_malicious_ip
-  - destination_malicious_ip
+# rules:
+  # - source_malicious_ip
+  # - destination_malicious_ip
 
 outputs:
   - file_output
