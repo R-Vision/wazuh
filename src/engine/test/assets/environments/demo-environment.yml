@@ -10,14 +10,14 @@ decoders:
   - suricata-stats
   - json
   - windows-security
-  - apache_error
-  - apache_access
+  - apache-error
+  - apache-access
   - aws-elb
-  - postgresql_csv
+  - postgresql-csv
 
-rules:
-  - source_malicious_ip
-  - destination_malicious_ip
+# rules:
+#   - source_malicious_ip
+#   - destination_malicious_ip
 
 outputs:
-  - file_output
+  - file-output
