@@ -13,16 +13,36 @@
 #define JSON_OP_H
 
 #define JSON_MAX_FSIZE 536870912
+// Check if a JSON object is tagged
+#define json_tagged_obj(x) (x && x->string)
 
 #include <external/cJSON/cJSON.h>
 
+/**
+ * @brief It temporarily saves in memory the content of the file located in path.
+ * It also allows requesting and verifying that the JSON has a null termination 
+ * and recovers the pointer to the last parsed byte.
+ * 
+ * @param path  location of the file to be read.
+ * @param retry allows to retry the operation if parsing to json fails.
+ * @return cJSON* 
+ */
 cJSON * json_fread(const char * path, char retry);
+
+/**
+ * @brief Represent a cJSON entity in plain text for storage in the file located at path.
+ * 
+ * @param path location of the file to be write.
+ * @param item json entity to be represented in text.
+ * @return int stores the result of the write operation.
+ */
 int json_fwrite(const char * path, const cJSON * item);
 
-// Clear C/C++ style comments from a JSON string
+/**
+ * @brief Clear C/C++ style comments from a JSON string.
+ * 
+ * @param json json to which comment stripping is applied.
+ */
 void json_strip(char * json);
-
-// Check if a JSON object is tagged
-#define json_tagged_obj(x) (x && x->string)
 
 #endif
